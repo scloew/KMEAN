@@ -1,6 +1,9 @@
 import pandas as pd
 from random import randint, seed
 from math import sqrt
+from matplotlib import pyplot as plt
+import matplotlib.cm as cm
+import numpy as np
 
 def pick_seeds(data,k):
 
@@ -19,14 +22,13 @@ def recalcCentroids(clusters, data, dataHeaders,k):
 
     newCentroids = []
     for i in range(k):
-        averages = {}
-        for h in dataHeaders:
-            averages[h]=0
+        averages = dict(zip(dataHeaders,[0]*len(dataHeaders)))
         for item in clusters[i]:
             for h in dataHeaders:
                 averages[h]+=data.loc[item,h]
         for h in dataHeaders:
             averages[h]=float(averages[h])/(len(clusters[i]))
+            #if empty cluster, this could create div by 0 error
         newCentroids.append(averages)
 
     return newCentroids
@@ -66,17 +68,21 @@ def cluster(data, centroids, dataHeaders, k):
         old = clusters
         centroids=recalcCentroids(clusters, data, dataHeaders, k)
 
-    for i in range(k):
-        print("------",i,"------")
-        print(old[i])
-    print('grr')
+    generatePlot(old, data)
 
+def generatePlot(clusters, data):
+    colors = iter(cm.rainbow(np.linspace(0, 1, k)))
+    for group in clusters:
+        x = [data.loc[i][0] for i in group]
+        y = [data.loc[i][1] for i in group]
+        plt.scatter(x, y, color=next(colors))
+    plt.show()
 
 if __name__=="__main__":
     seed()
     print('hello')
-    df = pd.read_csv("dummyData.csv")
+    df = pd.read_csv("dummyData2.csv")
     names = list(df.columns)
-    k = 14
+    k = 4
     centroids = pick_seeds(df, k)
     cluster(df, centroids, names, k)
